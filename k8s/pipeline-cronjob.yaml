@@ -1,0 +1,32 @@
+# Daily refresh. Ingestion is incremental, so a run only fetches the last day
+# of builds plus an overlap margin, then rebuilds features and retrains.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: tip-pipeline
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: pipeline
+              image: tip:0.1.0
+              imagePullPolicy: IfNotPresent
+              command: ["sh", "-c", "tip ingest --days 90 && tip dataset && tip train && tip anomalies && tip release"]
+              envFrom:
+                - configMapRef: {name: tip-config}
+              resources:
+                requests: {cpu: "1", memory: 2Gi}
+                limits: {memory: 4Gi}
+              volumeMounts:
+                - {name: data, mountPath: /data}
+          volumes:
+            - name: data
+              persistentVolumeClaim: {claimName: tip-data}

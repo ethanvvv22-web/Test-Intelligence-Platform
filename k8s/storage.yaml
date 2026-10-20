@@ -1,0 +1,21 @@
+# One volume for raw Parquet, features, models and reports. ReadWriteOnce is
+# enough on a single node; on a multi-node cluster use object storage (S3/MinIO)
+# for data/raw and a ReadWriteMany volume or an artifact store for models.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tip-data
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tip-config
+data:
+  TIP_DATA_DIR: /data
+  TIP_MODELS_DIR: /data/models
+  TIP_REPORTS_DIR: /data/reports

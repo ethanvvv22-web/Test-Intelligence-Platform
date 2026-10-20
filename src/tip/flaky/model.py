@@ -36,9 +36,14 @@ FIG_DIR = REPORTS_DIR / "figures"
 TARGET_PRECISION = 0.9
 
 
-def temporal_split(df: pd.DataFrame, train: float = 0.70, val: float = 0.15):
-    df = df.sort_values("end_time").reset_index(drop=True)
+def split_times(df: pd.DataFrame, train: float = 0.70, val: float = 0.15) -> tuple[pd.Timestamp, pd.Timestamp]:
     t1, t2 = df["end_time"].quantile([train, train + val])
+    return t1, t2
+
+
+def temporal_split(df: pd.DataFrame, train: float = 0.70, val: float = 0.15, times=None):
+    df = df.sort_values("end_time").reset_index(drop=True)
+    t1, t2 = times or split_times(df, train, val)
     return df[df.end_time < t1], df[(df.end_time >= t1) & (df.end_time < t2)], df[df.end_time >= t2]
 
 

@@ -53,5 +53,21 @@ def train() -> None:
             typer.echo(f"{name:>22}: " + "  ".join(f"{k}={v:.3f}" for k, v in m.items()))
 
 
+@app.command()
+def anomalies() -> None:
+    """Detect failure-rate / duration regressions per job and evaluate by injection."""
+    import json
+    from tip.anomaly import run
+    typer.echo(json.dumps(run(), indent=2))
+
+
+@app.command()
+def release() -> None:
+    """Estimate release confidence for candidates with failing jobs (needs `tip train` first)."""
+    import json
+    from tip.release import train_and_evaluate
+    typer.echo(json.dumps(train_and_evaluate(), indent=2))
+
+
 if __name__ == "__main__":
     app()

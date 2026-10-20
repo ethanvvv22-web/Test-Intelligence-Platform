@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tip-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: tip-dashboard}
+  template:
+    metadata:
+      labels: {app: tip-dashboard}
+    spec:
+      containers:
+        - name: dashboard
+          image: tip:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8501
+          envFrom:
+            - configMapRef: {name: tip-config}
+          readinessProbe:
+            httpGet: {path: /_stcore/health, port: 8501}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /_stcore/health, port: 8501}
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 250m, memory: 1Gi}
+            limits: {memory: 3Gi}
+          volumeMounts:
+            - {name: data, mountPath: /data, readOnly: true}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: tip-data}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tip-dashboard
+spec:
+  selector: {app: tip-dashboard}
+  ports:
+    - port: 8501
+      targetPort: 8501

@@ -2,7 +2,7 @@ services:
   # One-shot job: refresh data, rebuild the dataset, retrain.
   pipeline:
     build: .
-    command: sh -c "tip ingest --days 90 && tip dataset && tip train"
+    command: sh -c "tip ingest --days 90 && tip dataset && tip train && tip anomalies && tip release"
     volumes:
       - ./data:/data
       - ./models:/models

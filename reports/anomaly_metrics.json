@@ -1,0 +1,143 @@
+{
+  "rolling_robust": {
+    "false_alarm_rate": {
+      "duration": 0.02467811158798283,
+      "fail_rate": 0.01592273557817802
+    },
+    "duration+20%": {
+      "detection_rate": 0.14084507042253522,
+      "mean_delay_days": 0.45
+    },
+    "duration+50%": {
+      "detection_rate": 0.7253521126760564,
+      "mean_delay_days": 0.24271844660194175
+    },
+    "fail_rate+10%": {
+      "detection_rate": 0.18309859154929578,
+      "mean_delay_days": 0.6923076923076923
+    },
+    "fail_rate+30%": {
+      "detection_rate": 0.6197183098591549,
+      "mean_delay_days": 0.3522727272727273
+    }
+  },
+  "global_zscore": {
+    "false_alarm_rate": {
+      "duration": 0.017167381974248927,
+      "fail_rate": 0.023405551205081355
+    },
+    "duration+20%": {
+      "detection_rate": 0.035211267605633804,
+      "mean_delay_days": 1.0
+    },
+    "duration+50%": {
+      "detection_rate": 0.06338028169014084,
+      "mean_delay_days": 0.4444444444444444
+    },
+    "fail_rate+10%": {
+      "detection_rate": 0.09154929577464789,
+      "mean_delay_days": 0.9230769230769231
+    },
+    "fail_rate+30%": {
+      "detection_rate": 0.1056338028169014,
+      "mean_delay_days": 0.9333333333333333
+    }
+  },
+  "n_jobs": 142,
+  "n_job_days": 11493,
+  "threshold": 6.0,
+  "threshold_sweep": {
+    "4.0": {
+      "false_alarm_rate": {
+        "duration": 0.05811874105865522,
+        "fail_rate": 0.03271556599669364
+      },
+      "duration+20%": {
+        "detection_rate": 0.4788732394366197,
+        "mean_delay_days": 0.47058823529411764
+      },
+      "duration+50%": {
+        "detection_rate": 0.8732394366197183,
+        "mean_delay_days": 0.1693548387096774
+      },
+      "fail_rate+10%": {
+        "detection_rate": 0.352112676056338,
+        "mean_delay_days": 0.5
+      },
+      "fail_rate+30%": {
+        "detection_rate": 0.8098591549295775,
+        "mean_delay_days": 0.22608695652173913
+      }
+    },
+    "5.0": {
+      "false_alarm_rate": {
+        "duration": 0.03746423462088698,
+        "fail_rate": 0.02192638997650744
+      },
+      "duration+20%": {
+        "detection_rate": 0.23943661971830985,
+        "mean_delay_days": 0.6764705882352942
+      },
+      "duration+50%": {
+        "detection_rate": 0.795774647887324,
+        "mean_delay_days": 0.19469026548672566
+      },
+      "fail_rate+10%": {
+        "detection_rate": 0.28169014084507044,
+        "mean_delay_days": 0.6
+      },
+      "fail_rate+30%": {
+        "detection_rate": 0.7605633802816901,
+        "mean_delay_days": 0.3055555555555556
+      }
+    },
+    "6.0": {
+      "false_alarm_rate": {
+        "duration": 0.02467811158798283,
+        "fail_rate": 0.01592273557817802
+      },
+      "duration+20%": {
+        "detection_rate": 0.14084507042253522,
+        "mean_delay_days": 0.45
+      },
+      "duration+50%": {
+        "detection_rate": 0.7253521126760564,
+        "mean_delay_days": 0.24271844660194175
+      },
+      "fail_rate+10%": {
+        "detection_rate": 0.18309859154929578,
+        "mean_delay_days": 0.6923076923076923
+      },
+      "fail_rate+30%": {
+        "detection_rate": 0.6197183098591549,
+        "mean_delay_days": 0.3522727272727273
+      }
+    },
+    "8.0": {
+      "false_alarm_rate": {
+        "duration": 0.010014306151645207,
+        "fail_rate": 0.00809188201513965
+      },
+      "duration+20%": {
+        "detection_rate": 0.035211267605633804,
+        "mean_delay_days": 1.0
+      },
+      "duration+50%": {
+        "detection_rate": 0.5352112676056338,
+        "mean_delay_days": 0.2894736842105263
+      },
+      "fail_rate+10%": {
+        "detection_rate": 0.07042253521126761,
+        "mean_delay_days": 0.7
+      },
+      "fail_rate+30%": {
+        "detection_rate": 0.4084507042253521,
+        "mean_delay_days": 0.2413793103448276
+      }
+    }
+  },
+  "detected_on_real_data": {
+    "fail_rate_alarms": 183,
+    "duration_alarms": 276
+  }
+}

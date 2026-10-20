@@ -12,6 +12,8 @@ import streamlit as st
 from tip.config import FAILURE_RESULTS
 from tip.flaky.dataset import failure_features
 from tip.flaky.model import FIG_DIR, METRICS_PATH, MODEL_PATH
+from tip.anomaly import DAILY_PATH as ANOMALY_DAILY, METRICS_PATH as ANOMALY_METRICS
+from tip.release import CANDIDATES_PATH as CANDIDATES, METRICS_PATH as RELEASE_METRICS
 from tip.warehouse import connect
 
 st.set_page_config(page_title="Test Intelligence Platform", layout="wide")
@@ -39,7 +41,8 @@ def scored_failures() -> pd.DataFrame:
 st.title("Test Intelligence Platform")
 st.caption("OpenStack / OpenDev Zuul CI — quality analytics and flaky-failure triage")
 
-overview, jobs, triage, model_tab = st.tabs(["Overview", "Job health", "Triage queue", "Model"])
+overview, jobs, triage, model_tab, anomaly_tab, release_tab = st.tabs(
+    ["Overview", "Job health", "Triage queue", "Triage model", "Regressions", "Release confidence"])
 
 with overview:
     k = q(f"""
@@ -119,3 +122,52 @@ with model_tab:
         imp = pd.Series(m["feature_importance"]).sort_values()
         st.plotly_chart(px.bar(imp, orientation="h", title="Permutation importance (Δ PR-AUC)"),
                         width="stretch")
+
+with anomaly_tab:
+    if not ANOMALY_DAILY.exists():
+        st.info("No anomaly scores yet. Run `tip anomalies`.")
+    else:
+        daily = pd.read_parquet(ANOMALY_DAILY)
+        alarms = daily[daily.fail_alarm | daily.duration_alarm]
+        st.markdown("**Days on which a job's failure rate or duration broke from its own trailing 14 days**")
+        per_day = alarms.groupby("day").size().rename("jobs_alarming").reset_index()
+        st.plotly_chart(px.bar(per_day, x="day", y="jobs_alarming",
+                               title="Jobs alarming per day (spikes across many jobs = shared incident)"),
+                        width="stretch")
+        job = st.selectbox("Job", sorted(alarms.job_name.unique()))
+        g = daily[daily.job_name == job]
+        left, right = st.columns(2)
+        fig = px.line(g, x="day", y="fail_rate", title="Failure rate").update_yaxes(tickformat=".0%")
+        fig.add_scatter(x=g[g.fail_alarm].day, y=g[g.fail_alarm].fail_rate, mode="markers", name="alarm")
+        left.plotly_chart(fig, width="stretch")
+        fig = px.line(g, x="day", y=g.duration / 60, title="Median duration of successful runs (min)")
+        fig.add_scatter(x=g[g.duration_alarm].day, y=g[g.duration_alarm].duration / 60, mode="markers", name="alarm")
+        right.plotly_chart(fig, width="stretch")
+        if ANOMALY_METRICS.exists():
+            m = json.loads(ANOMALY_METRICS.read_text())
+            st.markdown("**Injection evaluation** (synthetic step changes inserted into the real series)")
+            rows = {d: {k: (v["detection_rate"] if "detection_rate" in v else None) for k, v in m[d].items()
+                        if k != "false_alarm_rate"} | {f"false_alarms_{k}": v for k, v in m[d]["false_alarm_rate"].items()}
+                    for d in ("rolling_robust", "global_zscore")}
+            st.dataframe(pd.DataFrame(rows).T.style.format("{:.2f}"), width="stretch")
+
+with release_tab:
+    if not CANDIDATES.exists() or not RELEASE_METRICS.exists():
+        st.info("No release-confidence results yet. Run `tip release`.")
+    else:
+        m = json.loads(RELEASE_METRICS.read_text())
+        st.markdown("**Candidates with at least one failing voting job: is the code actually good?**")
+        st.dataframe(pd.DataFrame(m["test"]).T.style.format("{:.3f}"), width="stretch")
+        ci = m.get("bootstrap_roc_auc_95ci", {})
+        if ci:
+            st.caption("ROC-AUC 95% bootstrap CIs: " + "; ".join(f"{k} [{a:.3f}, {b:.3f}]" for k, (a, b) in ci.items()))
+        cand = pd.read_parquet(CANDIDATES)
+        recent = cand[cand.end_time >= cand.end_time.max() - pd.Timedelta(days=7)]
+        st.plotly_chart(px.histogram(recent, x="conf_compositional", color=recent.good.map({1: "good", 0: "broken"}),
+                                     nbins=20, barmode="overlay", title="Confidence vs. outcome (last 7 days)"),
+                        width="stretch")
+        st.dataframe(recent.sort_values("end_time", ascending=False)[
+            ["end_time", "project", "change", "patchset", "pipeline", "n_jobs", "n_failed", "conf_compositional", "good"]],
+            width="stretch", hide_index=True,
+            column_config={"conf_compositional": st.column_config.ProgressColumn("confidence", format="%.2f",
+                                                                                 min_value=0, max_value=1)})
