@@ -1,0 +1,18 @@
+services:
+  # One-shot job: refresh data, rebuild the dataset, retrain.
+  pipeline:
+    build: .
+    command: sh -c "tip ingest --days 90 && tip dataset && tip train"
+    volumes:
+      - ./data:/data
+      - ./models:/models
+      - ./reports:/app/reports
+    profiles: ["pipeline"]
+
+  dashboard:
+    build: .
+    ports: ["8501:8501"]
+    volumes:
+      - ./data:/data:ro
+      - ./models:/models:ro
+      - ./reports:/app/reports:ro
